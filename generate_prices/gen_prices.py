@@ -75,19 +75,19 @@ class Prices(object):
                 "gpus": self.prices_data["gpu"][slot],
                 "memory": self.prices_data["memory"][slot],
                 "disk_space": self.prices_data["disk_space"][slot],
-                "createdOn": self.date_today,
-                "updatedOn": self.date_today,
+                "created_on": self.date_today,
+                "updated_on": self.date_today,
             }
 
-            print(price_data)
-            res = post(api_endpoint, price_data)
+            try:
+                res = post(api_endpoint, price_data)
+
+                if res.status_code is not 200:
+                    raise ValueError(f"Could not post prices to {api_endpoint}\n{res}")
             
-            print()
-
-            if res.status_code is not 200:
-                raise ValueError(f"Could not post prices to {api_endpoint}\n{res}")
-
-        # return res.response
+            # Catch tuple of possible errors
+            except (BaseException,) as err:
+                print(f"{err}")
 
         return self
     
