@@ -1,0 +1,13 @@
+# ignore everything
+*
+
+# Except for python files
+!*.py
+
+# requirements
+!requirements.txt
+
+# and misc files
+!Dockerfile
+!gen-prices-cron
+!.gitignore

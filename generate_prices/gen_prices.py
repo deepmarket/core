@@ -7,10 +7,12 @@ from requests import post
 
 SLOTS: int = 4
 
-if environ.get("API_PRICING_ENDPOINT"):
+# Default to false
+if environ.get("API_PRICING_ENDPOINT", False):
     api_endpoint: str = environ.get("API_PRICING_ENDPOINT")
 else:
-    api_endpoint: str = "http://pacific.cs.pdx.edu/api/v1/pricing"
+    print("NOTICE: API_PRICING_ENDPOINT environment variable is unset\n\tDefaulting to localhost.")
+    api_endpoint: str = "http://localhost:8080/api/v1/pricing"
 
 class Prices(object):
 
@@ -26,7 +28,7 @@ class Prices(object):
 
         self.prices_tuple: tuple = (self.cpu_prices, self.gpu_prices, self.memory_prices, self.disk_prices)
 
-        self.prices_data = {
+        self.prices_data: dict = {
             "cpu": self.cpu_prices,
             "gpu": self.gpu_prices,
             "memory": self.memory_prices,
@@ -44,7 +46,7 @@ class Prices(object):
                 """
 
     def _update_prices_dict(self):
-        self.prices_data = {
+        self.prices_data: dict = {
             "cpu": self.cpu_prices,
             "gpu": self.gpu_prices,
             "memory": self.memory_prices,
@@ -52,12 +54,12 @@ class Prices(object):
         }
 
     def generate_prices(self):
-        self.cpu_prices = [uniform(*self._min_max_price) for _ in range(SLOTS)]
-        self.gpu_prices = [uniform(*self._min_max_price) for _ in range(SLOTS)]
-        self.memory_prices = [uniform(*self._min_max_price) for _ in range(SLOTS)]
-        self.disk_prices = [uniform(*self._min_max_price) for _ in range(SLOTS)]
+        self.cpu_prices: list = [uniform(*self._min_max_price) for _ in range(SLOTS)]
+        self.gpu_prices: list = [uniform(*self._min_max_price) for _ in range(SLOTS)]
+        self.memory_prices: list = [uniform(*self._min_max_price) for _ in range(SLOTS)]
+        self.disk_prices: list = [uniform(*self._min_max_price) for _ in range(SLOTS)]
         
-        # TODO: Can change to one liner but probably less trivial; note: have to update `update_prices_dict` tho :/
+        # TODO: Can change to one liner but less trivial; note: have to update `update_prices_dict` tho :/
         # self.prices_tuple = tuple([[uniform(*self._min_max_price) for _ in range(SLOTS)] for _ in self.prices_tuple])
         
         # Update new prices
@@ -69,7 +71,7 @@ class Prices(object):
     def submit_prices(self):
         for slot in range(SLOTS):
             
-            price_data = {
+            price_data: dict = {
                 "time_slot": slot,
                 "cpus": self.prices_data["cpu"][slot],
                 "gpus": self.prices_data["gpu"][slot],
@@ -80,7 +82,7 @@ class Prices(object):
             }
 
             try:
-                res = post(api_endpoint, price_data)
+                res: dict = post(api_endpoint, price_data)
 
                 if res.status_code is not 200:
                     raise ValueError(f"Could not post prices to {api_endpoint}\n{res}")
