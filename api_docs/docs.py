@@ -76,9 +76,9 @@ class Docs(object):
         self.curl = Curl(self.base)
         # self.curl.call(request="POST", endpoint="/auth/login/", data=API["user"])
 
-        self.output = ""
-
         self.gen_api_overview()
+
+        self.output = self.md.get()
         print(self.output)
 
     def gen_api_overview(self, uses: list=["curl"]):
@@ -87,10 +87,6 @@ class Docs(object):
 
         for endpoint in API["endpoints"]:
             name = endpoint["name"]
-            
-            self.output += self.md.heading(f"{name.capitalize()} ({self.md.as_code(endpoint.get('endpoint'))})", 3).get()
-            self.output += self.md.as_raw("\n\n")
-            self.output += self.md.as_raw(f"An overview of the {endpoint['name']} endpoint:", "\n\n")
             
             headers = endpoint.get("headers", ["method", "endpoint", "parameters", "requires token"])
             modifiers = endpoint.get("modifiers", [self.md.as_raw, self.md.as_code, self.md.as_code, self.md.as_raw])
@@ -104,10 +100,17 @@ class Docs(object):
                 [f(item) for f, item in zip(modifiers, row)] for row in endpoint.get("methods")
             ]
 
-            # print(body)
-            self.output += self.md.table(headers, body)
-            self.output += self.md.as_raw("\n\n")
-            self.output += self.md.hr().get()
+            self.md.heading(f"{name.capitalize()} ({endpoint.get('endpoint')})", 3) \
+                .p(f"An overview of the {endpoint['name']} endpoint:") \
+                .table(headers, body) \
+                .hr() \
+                .get()
+    
+    def gen_request(self,):
+        pass
+
+    def gen_response(self,):
+        pass
 
         return self
 
@@ -134,11 +137,6 @@ class MD(Output):
     def hr(self):
         self.base_str += self.as_raw("\n***\n")
         return self
-
-    # def heading(self, text: str="", size: int=1):
-    #     if size > 6:
-    #         size = 6
-    #     return self.as_raw(f"{'#' * size} {text}")
     
     def heading(self, text: str="", size: int=1):
         if size > 6:
@@ -148,13 +146,19 @@ class MD(Output):
         return self
     
     def link(self, text: str="", link: str=""):
-        return self.as_raw(f"[{text}]({link})")
+        self.base_str += self.as_raw(f"[{text}]({link})")
+        return self
 
-    def as_code(self, text: str or [], lang: str=None):
+    def code(self, text: str or [], lang: str=None):
         if lang is not None:
-            return self.as_raw(f"```{lang}\n{text}\n```")
+            self.base_str += self.as_raw(f"```{lang}\n{text}\n```")
         else:
-            return self.as_raw(f"`{text}`")
+            self.base_str += self.as_raw(f"`{text}`")
+        return self
+    
+    def p(self, text: str=""):
+        self.base_str += self.as_raw(f"\n\n{text}\n\n")
+        return self
     
     def _add_header(self, headers, column_widths):
         header_text: str = "|"
@@ -205,7 +209,8 @@ class MD(Output):
         table_text += self.as_raw("\n")
         table_text += self._add_body(body, column_widths)
 
-        return table_text
+        self.base_str += table_text
+        return self
 
     def print(self, text: str=""):
         print(self.as_raw(text))
