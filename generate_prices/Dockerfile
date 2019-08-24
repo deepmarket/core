@@ -17,4 +17,4 @@ COPY . /core/generate/
 RUN python -m pip install -r requirements.txt
 
 # tail -f keeps container running
-CMD cron && tail -f /var/log/cron.log
+CMD cron && tail -f /dev/null
