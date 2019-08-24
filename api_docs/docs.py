@@ -74,9 +74,9 @@ class Docs(object):
         self.md = MD("")
         self.base = API["__base"]
         self.curl = Curl(self.base)
-        # self.curl.call(request="POST", endpoint="/auth/login/", data=API["user"])
+        self.curl.call(request="POST", endpoint="/auth/login/", data=API["user"])
 
-        self.gen_api_overview()
+        # self.gen_api_overview()
 
         self.output = self.md.get()
         print(self.output)
@@ -105,6 +105,18 @@ class Docs(object):
                 .table(headers, body) \
                 .hr() \
                 .get()
+
+            for row in endpoint.get("methods"):
+                method = row[0]
+
+                self.md.heading("Request", 6) \
+                    .p("\n\n") \
+                    .code(f"{method} {self.base}") \
+                    .p("\n\nUsing ") \
+                    .code("curl")
+
+                request = self.gen_request()
+                
     
     def gen_request(self,):
         pass
@@ -230,12 +242,13 @@ class Curl(Call):
     def call(self, request: str="GET", endpoint: str="", header: str="Content-Type: application/json", data: str=""):
         from json import dumps
         from os import system
+        from subprocess import call
 
         json_data = dumps(data)
         call_string = self.template.format(request=request, header=header, data=json_data, base_url=self.base_url, endpoint=endpoint)
         
         print(call_string)
-        print(system(call_string))
+        print(call(call_string))
         # if status is not 0:
         #     print(f"NOTICE: {call_string[:10]}...{call_string[-10:]} returned {status}")
         
