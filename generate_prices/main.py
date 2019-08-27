@@ -1,3 +1,6 @@
+# Python path in container
+#!usr/local/bin/python
+
 from gen_prices import Prices
 
 
